@@ -1,0 +1,30 @@
+<section id="viewhotelDetails">
+    <h2>Details</h2>
+    <div class="hotel-ticket">
+        <div class="hotel-left">
+            <img src="{{product.imageUrl}}" alt="">
+        </div>
+        <div class="hotel-right">
+            <div>
+                <h3>{{product.name}}</h3>
+            </div>
+            <div>
+                {{product.city}}
+            </div>
+            <p><span>Free rooms: {{product.rooms}}</span> </p>
+            {{#if product.hasUser}}
+            {{#if product.isAuthor}}
+            <a href="/products/edit/{{product._id}}" class="edit">Edit</a>
+            <a href="/products/delete/{{product._id}}" class="remove">Delete</a>
+            {{else}}
+            {{#if product.isBooked}}
+            <p><span class="green">You already have booked a room</span> </p>
+            {{else}}
+            <a href="/products/book/{{product._id}}" class="book">Book</a>
+            {{/if}}
+            {{/if}}
+            {{/if}}
+        </div>
+
+    </div>
+</section>
