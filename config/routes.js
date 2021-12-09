@@ -8,5 +8,7 @@ module.exports = (app) => {
     app.use('/auth', authController)
     app.use('/products', productController)
 
-    
+    app.use('*', (req, res) => {
+        res.render('404');
+    });
 }
