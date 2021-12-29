@@ -86,25 +86,44 @@ router.get('/edit/:id', isUser(), async (req, res) => {
         res.redirect('/')
     }
 })
-router.post('/edit/:id', isUser(), async (req, res) => {
-    try {
-        const product = await req.storage.getProductById(req.params.id)
+router.post('/edit/:id', isUser(),
+body('name')
+.isLength({ min: 4 }).withMessage('Name must be at least 4 symbols'),
+body('city')
+.isLength({ min: 4 }).withMessage('City must be at least 4 symbols'),
+body('imageUrl')
+.matches('^https?:\/\/').withMessage('Image must be a valid URL') ,
+body('rooms')
+.custom(value=>{
+    if (value < 1 || value > 100) {
+        throw new Error('Count of rooms must be betwen 1 and 100')
+    }
+    return true
+}), 
+async (req, res) => {
+    const { errors } = validationResult(req)
+    const productData = {
+        name: req.body.name,
+        city: req.body.city,
+        imageUrl: req.body.imageUrl,
+        rooms: req.body.rooms,
+    }
 
+    try {
+        if (errors.length > 0) {
+            const message = errors.map(err => err.msg).join('\n')
+            throw new Error(message)
+        }
+        const product = await req.storage.getProductById(req.params.id)
         if (req.user._id != product.author) {
             throw new Error('Cannot edit')
         }
-        await req.storage.editProduct(req.params.id, req.body)
+
+        await req.storage.editProduct(req.params.id, productData)
         res.redirect('/')
     } catch (err) {
-        let errors
-        if (err.errors) {
-            errors = Object.values(err.errors).map(e => e.properties.message)
-        } else {
-            errors = [err.message]
-        }
-
         const ctx = {
-            errors,
+            errors: err.message.split('\n'),
             product: {
                 _id: req.params.id,
                 name: req.body.name,
