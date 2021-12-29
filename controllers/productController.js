@@ -1,4 +1,5 @@
 const router = require('express').Router()
+const { body, validationResult } = require('express-validator')
 const { isUser } = require('../middlewares/guards.js')
 const { deleteProduct } = require('../services/product.js')
 
@@ -7,8 +8,22 @@ router.get('/create', isUser(), async (req, res) => {
     res.render('product/create')
 })
 
-router.post('/create', isUser(), async (req, res) => {
-
+router.post('/create', isUser(),
+body('name')
+.isLength({ min: 4 }).withMessage('Name must be at least 4 symbols'),
+body('city')
+.isLength({ min: 4 }).withMessage('City must be at least 4 symbols'),
+body('imageUrl')
+.matches('^https?:\/\/').withMessage('Image must be a valid URL') ,
+body('rooms')
+.custom(value=>{
+    if (value < 1 || value > 100) {
+        throw new Error('Count of rooms must be betwen 1 and 100')
+    }
+    return true
+}),
+ async (req, res) => {
+    const { errors } = validationResult(req)
     const productData = {
         name: req.body.name,
         city: req.body.city,
@@ -19,18 +34,17 @@ router.post('/create', isUser(), async (req, res) => {
     }
 
     try {
+        if (errors.length > 0) {
+            const message = errors.map(err => err.msg).join('\n')
+            throw new Error(message)
+        }
         await req.storage.createProduct(productData)
         res.redirect('/')
     } catch (err) {
-        let errors
-        if (err.errors) {
-            errors = Object.values(err.errors).map(e => e.properties.message)
-        } else {
-            errors = [err.message]
-        }
-
+       
+        console.log(errors)
         const ctx = {
-            errors,
+            errors: err.message.split('\n'),
             productData: {
                 name: req.body.name,
                 city: req.body.city,

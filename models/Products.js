@@ -3,24 +3,19 @@ const { Schema, model } = require('mongoose')
 const schema = new Schema({
     name: {
         type: String,
-        required: [true, 'name of the hotel must be at least 4 symbols long'],
-        minlength: [4, 'name must be at least 4 characters long']
+        required: true
     },
     city: {
         type: String,
-        required: [true, 'name of the city must be at least 3 symbols long'],
-        minlength: [4, 'city must be at least 4 characters long']
+        required: true
     },
     imageUrl: {
         type: String,
-        required: [true, 'Invalid URL'],
-        match: [/^https?:\/\//, 'Image must be a valid URL']
+        required: true
     },
     rooms: {
         type: Number,
-        required: [true, 'The count of rooms is required'],
-        min: [1, 'Count of rooms must be betwen 1 and 100'],
-        max: [100, 'Count of rooms must be betwen 1 and 100']
+        required: true
     },
     booked: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     author: { type: Schema.Types.ObjectId, ref: 'User' }
